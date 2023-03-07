@@ -5,37 +5,44 @@ namespace App\Http\Controllers;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 
-class ReservationsController extends Controller
-{
 
+class AdminController extends Controller
+{
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Reservation::latest()->paginate(8);
-    
-        return view('layout.create',compact('data'))
-            ->with('i', (request()->input('page', 1) - 1) * 8);
+        $students = Reservation::query();
+
+        // If a search query is present, filter the results
+        if ($request->input('search')) {
+            $searchQuery = $request->input('search');
+            $students->where('student_lrn', 'LIKE', "%{$searchQuery}%")
+                ->orWhere('first_name', 'LIKE', "%{$searchQuery}%")
+                ->orWhere('middle_name', 'LIKE', "%{$searchQuery}%")
+                ->orWhere('last_name', 'LIKE', "%{$searchQuery}%")
+                ->orWhere('age', 'LIKE', "%{$searchQuery}%")
+                ->orWhere('year_level', 'LIKE', "%{$searchQuery}%")
+                ->orWhere('section', 'LIKE', "%{$searchQuery}%");
+        }
+
+        $students = $students->paginate(10);
+
+        return view('reservations.index', compact('students'));
     }
+
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
-        return view('layout.create');
+        return view('reservations.create');
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
@@ -47,19 +54,22 @@ class ReservationsController extends Controller
             'time' => 'required',
             'number_of_people' => 'required',
             'message' => 'required'
-        ]); 
-
+        ]);
+    
         Reservation::create($request->all());
-     
-        return redirect()->route('layout.create')
-                        ->with('success','Reservation created successfully.')->setTargetUrl(url()->previous() . '#book-a-table');
-        
-                        // return redirect()->back()->withMessage('success','Reservation created successfully.');
-        // return redirect()->back()->withInput()
-        //                 ->with('success','Reservation created successfully.')->fragment('section-id');
-
-
+    
+        return redirect()->route('reservations.index')
+            ->with('success','Reservation created successfully.');
     }
+
+    /**
+     * Display the specified resource.
+     */
+        public function show(Reservation $reservation)
+    {
+        return view('reservations.show',compact('reservation'));
+    }
+
     public function edit(Reservation $reservation)
     {
         return view('reservations.edit',compact('reservation'));
@@ -90,6 +100,4 @@ class ReservationsController extends Controller
             ->with('success','Reservation deleted successfully');
 
     }
-
-
 }

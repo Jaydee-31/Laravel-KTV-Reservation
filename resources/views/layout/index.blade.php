@@ -61,6 +61,7 @@
       </nav><!-- .navbar -->
 
       <a class="btn-book-a-table" href="#book-a-table">Reserve a Table</a>
+      <a href="{{ route('reservations.index') }}">Admin</a>
       {{-- <a class="arrow" ">Manage</a> --}}
       <i class="mobile-nav-toggle mobile-nav-show bi bi-list"></i>
       <i class="mobile-nav-toggle mobile-nav-hide d-none bi bi-x"></i>
